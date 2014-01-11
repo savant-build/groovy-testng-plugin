@@ -45,7 +45,7 @@ class GroovyTestNGPluginTest {
   public void beforeSuite() {
     projectDir = Paths.get("")
     if (!Files.isRegularFile(projectDir.resolve("LICENSE"))) {
-      projectDir = Paths.get("testng-plugin")
+      projectDir = Paths.get("../groovy-testng-plugin")
     }
   }
 
