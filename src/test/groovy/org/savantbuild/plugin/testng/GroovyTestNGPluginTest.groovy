@@ -83,7 +83,7 @@ class GroovyTestNGPluginTest {
     )
 
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
-    plugin.settings.groovyVersion = "2.1.0"
+    plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test()

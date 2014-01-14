@@ -14,7 +14,6 @@
  * language governing permissions and limitations under the License.
  */
 package org.savantbuild.plugin.testng
-
 import groovy.xml.MarkupBuilder
 import org.savantbuild.dep.domain.ArtifactID
 import org.savantbuild.domain.Project
@@ -25,11 +24,9 @@ import org.savantbuild.plugin.dep.DependencyPlugin
 import org.savantbuild.plugin.groovy.BaseGroovyPlugin
 
 import java.nio.charset.Charset
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
+import java.nio.file.*
+import java.nio.file.attribute.BasicFileAttributes
 import java.util.jar.JarFile
-
 /**
  * The Groovy TestNG plugin. The public methods on this class define the features of the plugin.
  */
@@ -38,8 +35,8 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   final String ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.groovy.properties] " +
       "that contains the system configuration for the Groovy plugin. This file should include the location of the GDK " +
       "(groovy and groovyc) by version. These properties look like this:\n\n" +
-      "  2.1.0=/Library/Groovy/Versions/2.1.0/Home\n" +
-      "  2.2.0=/Library/Groovy/Versions/2.2.0/Home\n"
+      "  2.1=/Library/Groovy/Versions/2.1.0/Home\n" +
+      "  2.2=/Library/Groovy/Versions/2.2.0/Home\n"
   public static
   final String JAVA_ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.java.properties] " +
       "that contains the system configuration for the Java system. This file should include the location of the JDK " +
@@ -51,7 +48,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   Properties properties
   Properties javaProperties
   Path javaPath
-  Path groovyHomePath
+  Path groovyJarPath
   DependencyPlugin dependencyPlugin
 
   GroovyTestNGPlugin(Project project, Output output) {
@@ -68,7 +65,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     initialize()
 
     Classpath classpath = dependencyPlugin.classpath(settings.resolveConfiguration) {
-      path groovyHomePath.resolve("embeddable/groovy-all-${settings.groovyVersion}.jar")
+      path groovyJarPath
       project.publications.group("main").each { publication -> path(publication.file) }
       project.publications.group("test").each { publication -> path(publication.file) }
     }
@@ -126,14 +123,31 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
       fail("No GDK is configured for version [${settings.groovyVersion}].\n\n${ERROR_MESSAGE}")
     }
 
-    groovyHomePath = Paths.get(groovyHome)
+    Path groovyHomePath = Paths.get(groovyHome)
     if (!Files.isDirectory(groovyHomePath)) {
       fail("The GDK directory [${groovyHome}] is invalid because it doesn't exist.")
     }
 
-    Path groovyJar = groovyHomePath.resolve("embeddable/groovy-all-${settings.groovyVersion}.jar");
-    if (!Files.isReadable(groovyJar)) {
-      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy JAR file. It should be located at [${groovyJar}]")
+    Path embeddablePath = groovyHomePath.resolve("embeddable")
+    if (!Files.isDirectory(embeddablePath)) {
+      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy all JAR file. It should be located in the directory [${embeddablePath}]")
+    }
+
+    Files.walkFileTree(embeddablePath, new SimpleFileVisitor<Path>() {
+      @Override
+      FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+        String name = file.getFileName().toString()
+        if (name.startsWith("groovy-all") && name.endsWith(".jar") && !name.contains("indy")) {
+          groovyJarPath = file
+          return FileVisitResult.TERMINATE
+        }
+
+        return FileVisitResult.CONTINUE
+      }
+    })
+
+    if (groovyJarPath == null) {
+      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy all JAR file. It should be located in the directory [${embeddablePath}]")
     }
 
     if (!settings.javaVersion) {
