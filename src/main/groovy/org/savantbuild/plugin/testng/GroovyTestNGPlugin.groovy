@@ -14,6 +14,7 @@
  * language governing permissions and limitations under the License.
  */
 package org.savantbuild.plugin.testng
+
 import groovy.xml.MarkupBuilder
 import org.savantbuild.dep.domain.ArtifactID
 import org.savantbuild.domain.Project
@@ -27,17 +28,20 @@ import java.nio.charset.Charset
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+import java.util.jar.JarFile
 
 /**
  * The Groovy TestNG plugin. The public methods on this class define the features of the plugin.
  */
 class GroovyTestNGPlugin extends BaseGroovyPlugin {
-  public static final String ERROR_MESSAGE = "You must create the file [%s] " +
+  public static
+  final String ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.groovy.properties] " +
       "that contains the system configuration for the Groovy plugin. This file should include the location of the GDK " +
       "(groovy and groovyc) by version. These properties look like this:\n\n" +
-      "  2.1=/Library/Groovy/Versions/2.1/Home\n" +
-      "  2.2=/Library/Groovy/Versions/2.2/Home\n"
-  public static final String JAVA_ERROR_MESSAGE = "You must create the file [%s] " +
+      "  2.1.0=/Library/Groovy/Versions/2.1.0/Home\n" +
+      "  2.2.0=/Library/Groovy/Versions/2.2.0/Home\n"
+  public static
+  final String JAVA_ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.java.properties] " +
       "that contains the system configuration for the Java system. This file should include the location of the JDK " +
       "(java and javac) by version. These properties look like this:\n\n" +
       "  1.6=/Library/Java/JavaVirtualMachines/1.6.0_65-b14-462.jdk/Contents/Home\n" +
@@ -64,8 +68,9 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     initialize()
 
     Classpath classpath = dependencyPlugin.classpath(settings.resolveConfiguration) {
-      project.publications.each { publication -> path(publication.file) }
-      path groovyHomePath.resolve("lib/groovy-${settings.groovyVersion}.jar")
+      path groovyHomePath.resolve("embeddable/groovy-all-${settings.groovyVersion}.jar")
+      project.publications.group("main").each { publication -> path(publication.file) }
+      project.publications.group("test").each { publication -> path(publication.file) }
     }
 
     Path xmlFile = buildXMLFile()
@@ -83,33 +88,52 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   }
 
   Path buildXMLFile() {
+    Set<String> classNames = new TreeSet<>()
+    project.publications.group("test").each { publication ->
+      JarFile jarFile = new JarFile(project.directory.resolve(publication.file).toFile())
+      jarFile.entries().each { entry ->
+        if (!entry.directory && entry.name.endsWith("Test.class")) {
+          classNames.add(entry.name.replace("/", ".").replace(".class", ""))
+        }
+      }
+    }
+
     Path xmlFile = FileTools.createTempPath("savant", "testng.xml", true)
     BufferedWriter writer = Files.newBufferedWriter(xmlFile, Charset.forName("UTF-8"))
     MarkupBuilder xml = new MarkupBuilder(writer)
-    xml.suite(name: "Savant TestNG Suite", verbose: "1") {
+    xml.suite(name: "All Tests", "allow-return-values": "true", verbose: "10000000") {
       test(name: "All Tests") {
-        'package'(name: "*")
+        classes {
+          classNames.each { className -> "class"(name: className) }
+        }
       }
     }
+
     writer.flush()
     writer.close()
+    println "XML is " + new String(Files.readAllBytes(xmlFile))
     return xmlFile
   }
 
   private void initialize() {
     if (!settings.groovyVersion) {
       fail("You must configure the Groovy version to use with the settings object. It will look something like this:\n\n" +
-          "  groovy.settings.groovyVersion=\"2.1\"")
+          "  groovy.settings.groovyVersion=\"2.1.0\"")
     }
 
     String groovyHome = properties.getProperty(settings.groovyVersion)
     if (!groovyHome) {
-      fail("No GDK is configured for version [${settings.groovyVersion}].\n\n" + ERROR_MESSAGE)
+      fail("No GDK is configured for version [${settings.groovyVersion}].\n\n${ERROR_MESSAGE}")
     }
 
     groovyHomePath = Paths.get(groovyHome)
     if (!Files.isDirectory(groovyHomePath)) {
       fail("The GDK directory [${groovyHome}] is invalid because it doesn't exist.")
+    }
+
+    Path groovyJar = groovyHomePath.resolve("embeddable/groovy-all-${settings.groovyVersion}.jar");
+    if (!Files.isReadable(groovyJar)) {
+      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy JAR file. It should be located at [${groovyJar}]")
     }
 
     if (!settings.javaVersion) {
@@ -119,7 +143,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
     String javaHome = javaProperties.getProperty(settings.javaVersion)
     if (!javaHome) {
-      fail("No JDK is configured for version [${settings.javaVersion}].\n\n" + JAVA_ERROR_MESSAGE)
+      fail("No JDK is configured for version [${settings.javaVersion}].\n\n${JAVA_ERROR_MESSAGE}")
     }
 
     javaPath = Paths.get(javaHome, "bin/java")

@@ -14,6 +14,7 @@
  * language governing permissions and limitations under the License.
  */
 package org.savantbuild.plugin.testng
+
 import org.savantbuild.dep.domain.*
 import org.savantbuild.dep.workflow.FetchWorkflow
 import org.savantbuild.dep.workflow.PublishWorkflow
@@ -31,6 +32,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+import static org.testng.Assert.assertEquals
 import static org.testng.Assert.assertTrue
 
 /**
@@ -63,8 +65,13 @@ class GroovyTestNGPluginTest {
     project.version = new Version("1.0")
     project.license = License.Apachev2
 
+    project.publications.add("main", new Publication(new Artifact("org.savantbuild.test:test-project:1.0.0", License.Commercial), new ArtifactMetaData(null, License.Commercial),
+        Paths.get("build/jars/test-project-1.0.0.jar"), null))
+    project.publications.add("test", new Publication(new Artifact("org.savantbuild.test:test-project:test-project-test:1.0.0:jar", License.Commercial), new ArtifactMetaData(null, License.Commercial),
+        Paths.get("build/jars/test-project-test-1.0.0.jar"), null))
+
     Path repositoryPath = Paths.get(System.getProperty("user.home"), "dev/inversoft/repositories/savant")
-    project.dependencies = new Dependencies(new DependencyGroup("test-compile", false, new Dependency("org.testng:testng:6.8:jar", false)))
+    project.dependencies = new Dependencies(new DependencyGroup("test-compile", false, new Dependency("org.testng:testng:6.8.7:jar", false)))
     project.workflow = new Workflow(
         new FetchWorkflow(output,
             new CacheProcess(output, projectDir.resolve("build/cache").toString()),
@@ -76,10 +83,14 @@ class GroovyTestNGPluginTest {
     )
 
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
-    plugin.settings.groovyVersion = "2.1"
+    plugin.settings.groovyVersion = "2.1.0"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test()
     assertTrue(Files.isDirectory(projectDir.resolve("test-project/build/test-reports")))
+    assertTrue(Files.isReadable(projectDir.resolve("test-project/build/test-reports/All Tests/All Tests.xml")))
+
+    def testsuite = new XmlSlurper().parse(projectDir.resolve("test-project/build/test-reports/All Tests/All Tests.xml").toFile())
+    assertEquals(testsuite.testcase.@classname.text(), "MyClassTest")
   }
 }
