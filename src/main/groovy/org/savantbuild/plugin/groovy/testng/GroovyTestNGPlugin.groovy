@@ -115,7 +115,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   private void initialize() {
     if (!settings.groovyVersion) {
       fail("You must configure the Groovy version to use with the settings object. It will look something like this:\n\n" +
-          "  groovy.settings.groovyVersion=\"2.1.0\"")
+          "  groovy.settings.groovyVersion=\"2.1\"")
     }
 
     String groovyHome = properties.getProperty(settings.groovyVersion)
