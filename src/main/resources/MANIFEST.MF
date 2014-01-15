@@ -1,3 +1,5 @@
 Manifest-Version: 1.0
 Created-By: Inversoft
-Savant-Plugin-Class: org.savantbuild.plugin.testng.TestNGPlugin
+Main-Class: NotUsed
+Savant-Plugin-Class: org.savantbuild.plugin.groovy.testng.GroovyTestNGPlugin
+

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.savantbuild.plugin.testng
+package org.savantbuild.plugin.groovy.testng
 import groovy.xml.MarkupBuilder
 import org.savantbuild.dep.domain.ArtifactID
 import org.savantbuild.domain.Project

@@ -13,7 +13,7 @@
  * either express or implied. See the License for the specific
  * language governing permissions and limitations under the License.
  */
-package org.savantbuild.plugin.testng
+package org.savantbuild.plugin.groovy.testng
 
 import org.savantbuild.dep.domain.*
 import org.savantbuild.dep.workflow.FetchWorkflow
@@ -25,6 +25,7 @@ import org.savantbuild.domain.Project
 import org.savantbuild.io.FileTools
 import org.savantbuild.output.Output
 import org.savantbuild.output.SystemOutOutput
+import org.savantbuild.plugin.groovy.testng.GroovyTestNGPlugin
 import org.testng.annotations.BeforeSuite
 import org.testng.annotations.Test
 
