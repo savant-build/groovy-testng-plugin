@@ -14,6 +14,7 @@
  * language governing permissions and limitations under the License.
  */
 package org.savantbuild.plugin.groovy.testng
+
 import groovy.xml.MarkupBuilder
 import org.savantbuild.dep.domain.ArtifactID
 import org.savantbuild.domain.Project
@@ -27,6 +28,7 @@ import java.nio.charset.Charset
 import java.nio.file.*
 import java.nio.file.attribute.BasicFileAttributes
 import java.util.jar.JarFile
+
 /**
  * The Groovy TestNG plugin. The public methods on this class define the features of the plugin.
  */
@@ -73,7 +75,6 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     Path xmlFile = buildXMLFile()
 
     String command = "${javaPath} ${settings.jvmArguments} ${classpath.toString("-classpath ")} org.testng.TestNG -d ${settings.reportDirectory} ${xmlFile}"
-    println "Executing ${command}"
     Process process = command.execute(null, project.directory.toFile())
     process.consumeProcessOutput(System.out, System.err)
 
@@ -98,7 +99,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     Path xmlFile = FileTools.createTempPath("savant", "testng.xml", true)
     BufferedWriter writer = Files.newBufferedWriter(xmlFile, Charset.forName("UTF-8"))
     MarkupBuilder xml = new MarkupBuilder(writer)
-    xml.suite(name: "All Tests", "allow-return-values": "true", verbose: "10000000") {
+    xml.suite(name: "All Tests", "allow-return-values": "true", verbose: "${settings.verbosity}") {
       test(name: "All Tests") {
         classes {
           classNames.each { className -> "class"(name: className) }
@@ -108,14 +109,14 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
     writer.flush()
     writer.close()
-    println "XML is " + new String(Files.readAllBytes(xmlFile))
+    output.debug("TestNG XML file contents are:\n${new String(Files.readAllBytes(xmlFile), "UTF-8")}")
     return xmlFile
   }
 
   private void initialize() {
     if (!settings.groovyVersion) {
       fail("You must configure the Groovy version to use with the settings object. It will look something like this:\n\n" +
-          "  groovy.settings.groovyVersion=\"2.1\"")
+          "  groovyTestNG.settings.groovyVersion=\"2.1\"")
     }
 
     String groovyHome = properties.getProperty(settings.groovyVersion)
@@ -137,7 +138,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
       @Override
       FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         String name = file.getFileName().toString()
-        if (name.startsWith("groovy-all") && name.endsWith(".jar") && !name.contains("indy")) {
+        if (name.startsWith("groovy-all") && name.endsWith(".jar") && name.contains("indy") == settings.indy) {
           groovyJarPath = file
           return FileVisitResult.TERMINATE
         }
@@ -152,7 +153,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
     if (!settings.javaVersion) {
       fail("You must configure the Java version to use with the settings object. It will look something like this:\n\n" +
-          "  groovy.settings.javaVersion=\"1.7\"")
+          "  groovyTestNG.settings.javaVersion=\"1.7\"")
     }
 
     String javaHome = javaProperties.getProperty(settings.javaVersion)

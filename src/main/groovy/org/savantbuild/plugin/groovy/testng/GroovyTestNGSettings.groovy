@@ -28,7 +28,10 @@ class GroovyTestNGSettings {
   String groovyVersion
   String javaVersion
   String jvmArguments = ""
+  boolean indy = false
+  int verbosity = 1
   ResolveConfiguration resolveConfiguration = new ResolveConfiguration()
+      .with("provided", new TypeResolveConfiguration(true, true))
       .with("compile", new TypeResolveConfiguration(true, true))
       .with("run", new TypeResolveConfiguration(true, true))
       .with("test-compile", new TypeResolveConfiguration(true, true))
