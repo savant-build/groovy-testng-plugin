@@ -75,6 +75,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     Path xmlFile = buildXMLFile()
 
     String command = "${javaPath} ${settings.jvmArguments} ${classpath.toString("-classpath ")} org.testng.TestNG -d ${settings.reportDirectory} ${xmlFile}"
+    output.debug("Executing [%s]", command)
     Process process = command.execute(null, project.directory.toFile())
     process.consumeProcessOutput(System.out, System.err)
 
