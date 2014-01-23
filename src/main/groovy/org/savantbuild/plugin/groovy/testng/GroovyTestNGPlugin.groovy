@@ -66,10 +66,11 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   void test() {
     initialize()
 
-    Classpath classpath = dependencyPlugin.classpath(settings.resolveConfiguration) {
-      path groovyJarPath
-      project.publications.group("main").each { publication -> path(publication.file) }
-      project.publications.group("test").each { publication -> path(publication.file) }
+    Classpath classpath = dependencyPlugin.classpath {
+      settings.dependencies.each { deps -> dependencies(deps) }
+      path(location: groovyJarPath)
+      project.publications.group("main").each { publication -> path(location: publication.file) }
+      project.publications.group("test").each { publication -> path(location: publication.file) }
     }
 
     Path xmlFile = buildXMLFile()
