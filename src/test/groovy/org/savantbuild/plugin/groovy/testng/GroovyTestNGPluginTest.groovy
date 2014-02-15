@@ -25,7 +25,7 @@ import org.savantbuild.domain.Project
 import org.savantbuild.io.FileTools
 import org.savantbuild.output.Output
 import org.savantbuild.output.SystemOutOutput
-import org.savantbuild.plugin.groovy.testng.GroovyTestNGPlugin
+import org.testng.annotations.BeforeMethod
 import org.testng.annotations.BeforeSuite
 import org.testng.annotations.Test
 
@@ -33,6 +33,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+import static java.util.Arrays.asList
 import static org.testng.Assert.assertEquals
 import static org.testng.Assert.assertTrue
 
@@ -44,6 +45,10 @@ import static org.testng.Assert.assertTrue
 class GroovyTestNGPluginTest {
   public static Path projectDir
 
+  Output output
+
+  Project project
+
   @BeforeSuite
   public void beforeSuite() {
     projectDir = Paths.get("")
@@ -52,15 +57,15 @@ class GroovyTestNGPluginTest {
     }
   }
 
-  @Test
-  public void all() throws Exception {
+  @BeforeMethod
+  public void beforeMethod() {
     FileTools.prune(projectDir.resolve("build/cache"))
     FileTools.prune(projectDir.resolve("test-project/build/test-reports"))
 
-    Output output = new SystemOutOutput(true)
+    output = new SystemOutOutput(true)
     output.enableDebug()
 
-    Project project = new Project(projectDir.resolve("test-project"), output)
+    project = new Project(projectDir.resolve("test-project"), output)
     project.group = "org.savantbuild.test"
     project.name = "test-project"
     project.version = new Version("1.0")
@@ -82,16 +87,42 @@ class GroovyTestNGPluginTest {
             new CacheProcess(output, projectDir.resolve("build/cache").toString())
         )
     )
+  }
 
+  @Test
+  public void test() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
     plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test()
+    assertTestsRan("MyClassTest", "MyClassIntegrationTest", "MyClassUnitTest")
+
+    plugin.test(null)
+    assertTestsRan("MyClassTest", "MyClassIntegrationTest", "MyClassUnitTest")
+  }
+
+  @Test
+  public void WithGroup() throws Exception {
+    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
+    plugin.settings.groovyVersion = "2.1"
+    plugin.settings.javaVersion = "1.6"
+
+    plugin.test("unit")
+    assertTestsRan("MyClassUnitTest")
+
+    plugin.test("integration")
+    assertTestsRan("MyClassIntegrationTest")
+  }
+
+  static void assertTestsRan(String... classNames) {
     assertTrue(Files.isDirectory(projectDir.resolve("test-project/build/test-reports")))
     assertTrue(Files.isReadable(projectDir.resolve("test-project/build/test-reports/All Tests/All Tests.xml")))
 
     def testsuite = new XmlSlurper().parse(projectDir.resolve("test-project/build/test-reports/All Tests/All Tests.xml").toFile())
-    assertEquals(testsuite.testcase.@classname.text(), "MyClassTest")
+    Set<String> tested = new HashSet<>()
+    testsuite.testcase.each { testcase -> tested << testcase.@classname.text() }
+
+    assertEquals(tested, new HashSet<>(asList(classNames)))
   }
 }
