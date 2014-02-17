@@ -56,7 +56,7 @@ class GroovyTestNGSettings {
 
   /**
    * Defines the dependencies that are included on the classpath when the tests are run. This defaults to:
-   * <p/>
+   * <p>
    * <pre>
    *   [
    *     [group: "provided", transitive: true, fetchSource: false],
