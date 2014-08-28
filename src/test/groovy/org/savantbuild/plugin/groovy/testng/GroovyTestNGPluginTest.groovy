@@ -25,6 +25,7 @@ import org.savantbuild.domain.Project
 import org.savantbuild.io.FileTools
 import org.savantbuild.output.Output
 import org.savantbuild.output.SystemOutOutput
+import org.savantbuild.runtime.RuntimeConfiguration
 import org.testng.annotations.BeforeMethod
 import org.testng.annotations.BeforeSuite
 import org.testng.annotations.Test
@@ -91,7 +92,7 @@ class GroovyTestNGPluginTest {
 
   @Test
   public void test() throws Exception {
-    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
+    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
 
@@ -104,7 +105,7 @@ class GroovyTestNGPluginTest {
 
   @Test
   public void WithGroup() throws Exception {
-    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, output)
+    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
 

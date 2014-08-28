@@ -23,6 +23,7 @@ import org.savantbuild.lang.Classpath
 import org.savantbuild.output.Output
 import org.savantbuild.plugin.dep.DependencyPlugin
 import org.savantbuild.plugin.groovy.BaseGroovyPlugin
+import org.savantbuild.runtime.RuntimeConfiguration
 
 import java.nio.charset.Charset
 import java.nio.file.*
@@ -53,11 +54,11 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   Path groovyJarPath
   DependencyPlugin dependencyPlugin
 
-  GroovyTestNGPlugin(Project project, Output output) {
-    super(project, output)
+  GroovyTestNGPlugin(Project project, RuntimeConfiguration runtimeConfiguration, Output output) {
+    super(project, runtimeConfiguration, output)
     properties = loadConfiguration(new ArtifactID("org.savantbuild.plugin", "groovy", "groovy", "jar"), ERROR_MESSAGE)
     javaProperties = loadConfiguration(new ArtifactID("org.savantbuild.plugin", "java", "java", "jar"), JAVA_ERROR_MESSAGE)
-    dependencyPlugin = new DependencyPlugin(project, output)
+    dependencyPlugin = new DependencyPlugin(project, runtimeConfiguration, output)
   }
 
   /**
