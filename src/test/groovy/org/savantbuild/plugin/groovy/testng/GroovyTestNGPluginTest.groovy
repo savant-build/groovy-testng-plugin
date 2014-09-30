@@ -110,10 +110,10 @@ class GroovyTestNGPluginTest {
     plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
 
-    plugin.test("unit")
+    plugin.test(groups: ["unit"])
     assertTestsRan("MyClassUnitTest")
 
-    plugin.test("integration")
+    plugin.test(groups: ["integration"])
     assertTestsRan("MyClassIntegrationTest")
   }
 
