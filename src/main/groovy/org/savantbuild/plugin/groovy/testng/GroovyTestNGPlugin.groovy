@@ -15,7 +15,15 @@
  */
 package org.savantbuild.plugin.groovy.testng
 
-import groovy.xml.MarkupBuilder
+import java.nio.charset.Charset
+import java.nio.file.FileVisitResult
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
+import java.nio.file.SimpleFileVisitor
+import java.nio.file.attribute.BasicFileAttributes
+import java.util.jar.JarFile
+
 import org.savantbuild.dep.domain.ArtifactID
 import org.savantbuild.domain.Project
 import org.savantbuild.io.FileTools
@@ -25,10 +33,7 @@ import org.savantbuild.plugin.dep.DependencyPlugin
 import org.savantbuild.plugin.groovy.BaseGroovyPlugin
 import org.savantbuild.runtime.RuntimeConfiguration
 
-import java.nio.charset.Charset
-import java.nio.file.*
-import java.nio.file.attribute.BasicFileAttributes
-import java.util.jar.JarFile
+import groovy.xml.MarkupBuilder
 
 /**
  * The Groovy TestNG plugin. The public methods on this class define the features of the plugin.
@@ -40,6 +45,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
       "(groovy and groovyc) by version. These properties look like this:\n\n" +
       "  2.1=/Library/Groovy/Versions/2.1.0/Home\n" +
       "  2.2=/Library/Groovy/Versions/2.2.0/Home\n"
+
   public static
   final String JAVA_ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.java.properties] " +
       "that contains the system configuration for the Java system. This file should include the location of the JDK " +
@@ -47,12 +53,18 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
       "  1.6=/Library/Java/JavaVirtualMachines/1.6.0_65-b14-462.jdk/Contents/Home\n" +
       "  1.7=/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home\n" +
       "  1.8=/Library/Java/JavaVirtualMachines/jdk1.8.0.jdk/Contents/Home\n"
+
   GroovyTestNGSettings settings = new GroovyTestNGSettings()
-  Properties properties
-  Properties javaProperties
-  Path javaPath
-  Path groovyJarPath
+
   DependencyPlugin dependencyPlugin
+
+  Path groovyJarPath
+
+  Path javaPath
+
+  Properties javaProperties
+
+  Properties properties
 
   GroovyTestNGPlugin(Project project, RuntimeConfiguration runtimeConfiguration, Output output) {
     super(project, runtimeConfiguration, output)
@@ -73,6 +85,11 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
    * @param attributes The named attributes.
    */
   void test(Map<String, Object> attributes) {
+    if (runtimeConfiguration.switches.booleanSwitches.contains("skipTests")) {
+      output.info("Skipping tests")
+      return
+    }
+
     initialize()
 
     // Initialize the attributes if they are null

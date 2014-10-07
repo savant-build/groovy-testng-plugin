@@ -37,6 +37,7 @@ import java.nio.file.Paths
 
 import static java.util.Arrays.asList
 import static org.testng.Assert.assertEquals
+import static org.testng.Assert.assertFalse
 import static org.testng.Assert.assertTrue
 
 /**
@@ -105,7 +106,20 @@ class GroovyTestNGPluginTest {
   }
 
   @Test
-  public void WithGroup() throws Exception {
+  public void skipTests() throws Exception {
+    RuntimeConfiguration runtimeConfiguration = new RuntimeConfiguration()
+    runtimeConfiguration.switches.booleanSwitches.add("skipTests")
+
+    GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, runtimeConfiguration, output)
+    plugin.settings.groovyVersion = "2.1"
+    plugin.settings.javaVersion = "1.6"
+
+    plugin.test()
+    assertFalse(Files.isDirectory(projectDir.resolve("test-project/build/test-reports")))
+  }
+
+  @Test
+  public void withGroup() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.1"
     plugin.settings.javaVersion = "1.6"
