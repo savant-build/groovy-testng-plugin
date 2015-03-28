@@ -86,7 +86,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
    */
   void test(Map<String, Object> attributes) {
     if (runtimeConfiguration.switches.booleanSwitches.contains("skipTests")) {
-      output.info("Skipping tests")
+      output.infoln("Skipping tests")
       return
     }
 
@@ -107,7 +107,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
     Path xmlFile = buildXMLFile(attributes["groups"])
 
     String command = "${javaPath} ${settings.jvmArguments} ${classpath.toString("-classpath ")} org.testng.TestNG -d ${settings.reportDirectory} ${xmlFile}"
-    output.debug("Executing [%s]", command)
+    output.debugln("Executing [%s]", command)
     Process process = command.execute(null, project.directory.toFile())
     process.consumeProcessOutput(System.out, System.err)
 
@@ -149,7 +149,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
     writer.flush()
     writer.close()
-    output.debug("TestNG XML file contents are:\n${new String(Files.readAllBytes(xmlFile), "UTF-8")}")
+    output.debugln("TestNG XML file contents are:\n${new String(Files.readAllBytes(xmlFile), "UTF-8")}")
     return xmlFile
   }
 
