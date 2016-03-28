@@ -95,7 +95,7 @@ class GroovyTestNGPluginTest {
   @Test
   public void test() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
-    plugin.settings.groovyVersion = "2.2"
+    plugin.settings.groovyVersion = "2.4"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test()
@@ -111,7 +111,7 @@ class GroovyTestNGPluginTest {
     runtimeConfiguration.switches.booleanSwitches.add("skipTests")
 
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, runtimeConfiguration, output)
-    plugin.settings.groovyVersion = "2.2"
+    plugin.settings.groovyVersion = "2.4"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test()
@@ -121,7 +121,7 @@ class GroovyTestNGPluginTest {
   @Test
   public void withGroup() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
-    plugin.settings.groovyVersion = "2.2"
+    plugin.settings.groovyVersion = "2.4"
     plugin.settings.javaVersion = "1.6"
 
     plugin.test(groups: ["unit"])
