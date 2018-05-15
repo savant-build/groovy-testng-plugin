@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014, Inversoft Inc., All Rights Reserved
+ * Copyright (c) 2014-2018, Inversoft Inc., All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -96,7 +96,7 @@ class GroovyTestNGPluginTest {
   public void test() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.4"
-    plugin.settings.javaVersion = "1.6"
+    plugin.settings.javaVersion = "1.8"
 
     plugin.test()
     assertTestsRan("MyClassTest", "MyClassIntegrationTest", "MyClassUnitTest")
@@ -112,7 +112,7 @@ class GroovyTestNGPluginTest {
 
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, runtimeConfiguration, output)
     plugin.settings.groovyVersion = "2.4"
-    plugin.settings.javaVersion = "1.6"
+    plugin.settings.javaVersion = "1.8"
 
     plugin.test()
     assertFalse(Files.isDirectory(projectDir.resolve("test-project/build/test-reports")))
@@ -122,7 +122,7 @@ class GroovyTestNGPluginTest {
   public void withGroup() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.4"
-    plugin.settings.javaVersion = "1.6"
+    plugin.settings.javaVersion = "1.8"
 
     plugin.test(groups: ["unit"])
     assertTestsRan("MyClassUnitTest")
