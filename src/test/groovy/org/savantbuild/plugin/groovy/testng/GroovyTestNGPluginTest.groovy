@@ -53,7 +53,7 @@ class GroovyTestNGPluginTest {
   Project project
 
   @BeforeSuite
-  public void beforeSuite() {
+  void beforeSuite() {
     projectDir = Paths.get("")
     if (!Files.isRegularFile(projectDir.resolve("LICENSE"))) {
       projectDir = Paths.get("../groovy-testng-plugin")
@@ -61,7 +61,7 @@ class GroovyTestNGPluginTest {
   }
 
   @BeforeMethod
-  public void beforeMethod() {
+  void beforeMethod() {
     FileTools.prune(projectDir.resolve("build/cache"))
     FileTools.prune(projectDir.resolve("test-project/build/test-reports"))
 
@@ -79,12 +79,11 @@ class GroovyTestNGPluginTest {
     project.publications.add("test", new Publication(new ReifiedArtifact("org.savantbuild.test:test-project:test-project-test:1.0.0:jar", MapBuilder.simpleMap(License.Commercial, null)), new ArtifactMetaData(null, MapBuilder.simpleMap(License.Commercial, null)),
         project.directory.resolve("build/jars/test-project-test-1.0.0.jar"), null))
 
-    Path repositoryPath = Paths.get(System.getProperty("user.home"), "dev/inversoft/repositories/savant")
     project.dependencies = new Dependencies(new DependencyGroup("test-compile", false, new Artifact("org.testng:testng:6.8.7:jar", false)))
     project.workflow = new Workflow(
         new FetchWorkflow(output,
             new CacheProcess(output, projectDir.resolve("build/cache").toString()),
-            new URLProcess(output, repositoryPath.toUri().toString(), null, null)
+            new URLProcess(output, "http://savant.inversoft.org", null, null)
         ),
         new PublishWorkflow(
             new CacheProcess(output, projectDir.resolve("build/cache").toString())
@@ -93,7 +92,7 @@ class GroovyTestNGPluginTest {
   }
 
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.4"
     plugin.settings.javaVersion = "1.8"
@@ -106,7 +105,7 @@ class GroovyTestNGPluginTest {
   }
 
   @Test
-  public void skipTests() throws Exception {
+  void skipTests() throws Exception {
     RuntimeConfiguration runtimeConfiguration = new RuntimeConfiguration()
     runtimeConfiguration.switches.booleanSwitches.add("skipTests")
 
@@ -119,7 +118,7 @@ class GroovyTestNGPluginTest {
   }
 
   @Test
-  public void withGroup() throws Exception {
+  void withGroup() throws Exception {
     GroovyTestNGPlugin plugin = new GroovyTestNGPlugin(project, new RuntimeConfiguration(), output)
     plugin.settings.groovyVersion = "2.4"
     plugin.settings.javaVersion = "1.8"
