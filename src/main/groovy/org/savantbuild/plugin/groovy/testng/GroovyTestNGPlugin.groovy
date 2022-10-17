@@ -39,15 +39,13 @@ import groovy.xml.MarkupBuilder
  * The Groovy TestNG plugin. The public methods on this class define the features of the plugin.
  */
 class GroovyTestNGPlugin extends BaseGroovyPlugin {
-  public static
-  final String ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.groovy.properties] " +
+  public static final String ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.groovy.properties] " +
       "that contains the system configuration for the Groovy plugin. This file should include the location of the GDK " +
       "(groovy and groovyc) by version. These properties look like this:\n\n" +
       "  2.1=/Library/Groovy/Versions/2.1.0/Home\n" +
       "  2.2=/Library/Groovy/Versions/2.2.0/Home\n"
 
-  public static
-  final String JAVA_ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.java.properties] " +
+  public static final String JAVA_ERROR_MESSAGE = "You must create the file [~/.savant/plugins/org.savantbuild.plugin.java.properties] " +
       "that contains the system configuration for the Java system. This file should include the location of the JDK " +
       "(java and javac) by version. These properties look like this:\n\n" +
       "  1.6=/Library/Java/JavaVirtualMachines/1.6.0_65-b14-462.jdk/Contents/Home\n" +
@@ -58,7 +56,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
   DependencyPlugin dependencyPlugin
 
-  Path groovyJarPath
+  List<Path> groovyLibraries = []
 
   Path javaPath
 
@@ -99,7 +97,7 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
 
     Classpath classpath = dependencyPlugin.classpath {
       settings.dependencies.each { deps -> dependencies(deps) }
-      path(location: groovyJarPath)
+      groovyLibraries.each { lib -> path(location: lib) }
 
       // Publications are already resolved by now, therefore, we convert them to absolute paths so they won't be resolved again
       project.publications.group("main").each { publication -> path(location: publication.file.toAbsolutePath()) }
@@ -173,27 +171,22 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
       fail("The GDK directory [${groovyHome}] is invalid because it doesn't exist.")
     }
 
-    Path embeddablePath = groovyHomePath.resolve("embeddable")
-    if (!Files.isDirectory(embeddablePath)) {
-      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy all JAR file. It should be located in the directory [${embeddablePath}]")
+    Path libPath = groovyHomePath.resolve("lib")
+    if (!Files.isDirectory(libPath)) {
+      fail("The GDK directory [${groovyHome}] is invalid because it is missing the lib directory. It should be located in the directory [${libPath}]")
     }
 
-    Files.walkFileTree(embeddablePath, new SimpleFileVisitor<Path>() {
+    Files.walkFileTree(libPath, new SimpleFileVisitor<Path>() {
       @Override
       FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
         String name = file.getFileName().toString()
-        if (name.startsWith("groovy-all") && name.endsWith(".jar") && name.contains("indy") == settings.indy) {
-          groovyJarPath = file
-          return FileVisitResult.TERMINATE
+        if (name.endsWith(".jar")) {
+          groovyLibraries << file
         }
 
         return FileVisitResult.CONTINUE
       }
     })
-
-    if (groovyJarPath == null) {
-      fail("The GDK directory [${groovyHome}] is invalid because it is missing the Groovy all JAR file. It should be located in the directory [${embeddablePath}]")
-    }
 
     if (!settings.javaVersion) {
       fail("You must configure the Java version to use with the settings object. It will look something like this:\n\n" +
