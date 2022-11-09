@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2013, Inversoft Inc., All Rights Reserved
+ * Copyright (c) 2013-2022, Inversoft Inc., All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,8 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   DependencyPlugin dependencyPlugin
 
   List<Path> groovyLibraries = []
+
+  boolean initialized
 
   Path javaPath
 
@@ -156,6 +158,11 @@ class GroovyTestNGPlugin extends BaseGroovyPlugin {
   }
 
   private void initialize() {
+    if (initialized) {
+      return
+    }
+
+    initialized = true
     if (!settings.groovyVersion) {
       fail("You must configure the Groovy version to use with the settings object. It will look something like this:\n\n" +
           "  groovyTestNG.settings.groovyVersion=\"2.1\"")
