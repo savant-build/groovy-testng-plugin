@@ -30,7 +30,7 @@ groovy = loadPlugin(id: "org.savantbuild.plugin:groovy:0.1.0")
 
 // Plugin settings
 groovy.settings.groovyVersion = "2.2"
-groovy.settings.javaVersion = "1.8"
+groovy.settings.javaVersion = "17"
 
 target(name: "clean", description: "Cleans the project") {
   groovy.clean()
