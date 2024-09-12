@@ -26,7 +26,7 @@ project(group: "org.savantbuild.test", name: "test-project", version: "1.0.0", l
 }
 
 // Plugins
-groovy = loadPlugin(id: "org.savantbuild.plugin:groovy:0.1.0")
+def groovy = loadPlugin(id: "org.savantbuild.plugin:groovy:0.1.0")
 
 // Plugin settings
 groovy.settings.groovyVersion = "2.2"
