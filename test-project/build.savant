@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2014-2022, Inversoft Inc., All Rights Reserved
+ * Copyright (c) 2014-2024, Inversoft Inc., All Rights Reserved
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ project(group: "org.savantbuild.test", name: "test-project", version: "1.0.0", l
 }
 
 // Plugins
-def groovy = loadPlugin(id: "org.savantbuild.plugin:groovy:0.1.0")
+groovy = loadPlugin(id: "org.savantbuild.plugin:groovy:0.1.0")
 
 // Plugin settings
 groovy.settings.groovyVersion = "2.2"
